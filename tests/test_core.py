@@ -26,7 +26,7 @@ from tools import shared, building, config, webassembly
 from common import RunnerCore, path_from_root, requires_native_clang, test_file, create_file
 from common import skip_if, needs_dylink, no_windows, no_mac, is_slow_test, parameterized
 from common import env_modify, with_env_modify, disabled, node_pthreads
-from common import read_file, read_binary, require_v8, require_node
+from common import read_file, read_binary, require_v8, require_node, also_with_wasm_bigint
 from common import NON_ZERO, WEBIDL_BINDER, EMBUILDER
 import clang_native
 
@@ -66,26 +66,6 @@ def needs_non_trapping_float_to_int(f):
       self.skipTest('wasm2js only supports MVP for now')
     f(self)
   return decorated
-
-
-def also_with_wasm_bigint(f):
-  assert callable(f)
-
-  def metafunc(self, with_bigint):
-    assert self.get_setting('WASM_BIGINT') is None
-    if with_bigint:
-      if not self.is_wasm():
-        self.skipTest('wasm2js does not support WASM_BIGINT')
-      self.set_setting('WASM_BIGINT')
-      self.require_node()
-      self.node_args.append('--experimental-wasm-bigint')
-      f(self)
-    else:
-      f(self)
-
-  metafunc._parameterize = {'': (False,),
-                            'bigint': (True,)}
-  return metafunc
 
 
 # without EMTEST_ALL_ENGINES set we only run tests in a single VM by

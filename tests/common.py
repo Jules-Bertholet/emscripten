@@ -230,6 +230,26 @@ def with_env_modify(updates):
   return decorated
 
 
+def also_with_wasm_bigint(f):
+  assert callable(f)
+
+  def metafunc(self, with_bigint):
+    assert self.get_setting('WASM_BIGINT') is None
+    if with_bigint:
+      if not self.is_wasm():
+        self.skipTest('wasm2js does not support WASM_BIGINT')
+      self.set_setting('WASM_BIGINT')
+      self.require_node()
+      self.node_args.append('--experimental-wasm-bigint')
+      f(self)
+    else:
+      f(self)
+
+  metafunc._parameterize = {'': (False,),
+                            'bigint': (True,)}
+  return metafunc
+
+
 def also_with_minimal_runtime(f):
   assert callable(f)
 

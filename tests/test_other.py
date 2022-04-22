@@ -35,7 +35,7 @@ from common import RunnerCore, path_from_root, is_slow_test, ensure_dir, disable
 from common import env_modify, no_mac, no_windows, requires_native_clang, with_env_modify
 from common import create_file, parameterized, NON_ZERO, node_pthreads, TEST_ROOT, test_file
 from common import compiler_for, read_file, read_binary, EMBUILDER, require_v8, require_node
-from common import also_with_minimal_runtime
+from common import also_with_minimal_runtime, also_with_wasm_bigint
 from tools import shared, building, utils, deps_info, response_file
 import common
 import jsrun
@@ -11928,3 +11928,10 @@ void foo() {}
   def test_no_cfi(self):
     err = self.expect_fail([EMCC, '-fsanitize=cfi', '-flto', test_file('hello_world.c')])
     self.assertContained('emcc: error: emscripten does not currently support -fsanitize=cfi', err)
+
+  @also_with_wasm_bigint
+  def test_js_library_i64_params(self):
+    # Tests the defineI64Param and receiveI64ParamAsDouble helpers that are
+    # used to recieve i64 argument in syscalls.
+    self.emcc_args += ['--js-library=' + test_file('other/js_library_i64_params.js')]
+    self.do_other_test('js_library_i64_params.c')
